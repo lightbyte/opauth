@@ -407,30 +407,33 @@ class OpauthStrategy {
 	 * @return string Content resulted from request, without headers
 	 */
 	public static function httpRequest($url, $options = null, &$responseHeaders = null) {
-		$context = null;
-		if (!empty($options) && is_array($options)) {
-			if (empty($options['http']['header'])) {
-				$options['http']['header'] = "User-Agent: opauth";
-			} else {
-				$options['http']['header'] .= "\r\nUser-Agent: opauth";
-			}
-		} else {
-			$options = array('http' => array('header' => 'User-Agent: opauth'));
-		}
-		
+		$content = null;
 		if (ini_get('allow_url_fopen')) {
+			$context = null;
+			if (!empty($options) && is_array($options)) {
+				if (empty($options['http']['header'])) {
+					$options['http']['header'] = "User-Agent: opauth";
+				} else {
+					$options['http']['header'] .= "\r\nUser-Agent: opauth";
+				}
+			} else {
+				$options = array('http' => array('header' => 'User-Agent: opauth'));
+			}
+			
 			$context = stream_context_create($options);
 			$content = file_get_contents($url, false, $context);
 		} elseif (function_exists('curl_version')){
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $options);
+			curl_setopt($ch, CURLOPT_USERAGENT, 'opauth');
 			$content = curl_exec($ch);
 			curl_close($ch);
 		}
 		
-		$responseHeaders = implode("\r\n", $http_response_header);
+		//Maybe someone will have the interest and time to return the headers for debugin purpose.
+		//By now I comment it out to avoid errors.
+		//$responseHeaders = implode("\r\n", $http_response_header);
 
 		return $content;
 	}
